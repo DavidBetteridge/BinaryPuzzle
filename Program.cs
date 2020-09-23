@@ -114,73 +114,47 @@ namespace Binary
 
                     if (columnDetails.NumberOfGaps != 0 && columnDetails.NumberOf0s == 5)
                     {
-                        for (int row = 0; row < 10; row++)
+                        foreach (var gap in columnDetails.Gaps)
                         {
-                            if (board[column, row] == ' ')
-                            {
-                                board[column, row] = '1';
-                            }
+                            board[column, gap] = '1';
                         }
                     }
 
                     if (columnDetails.NumberOfGaps != 0 && columnDetails.NumberOf1s == 5)
                     {
-                        for (int row = 0; row < 10; row++)
+                        foreach (var gap in columnDetails.Gaps)
                         {
-                            if (board[column, row] == ' ')
-                            {
-                                board[column, row] = '0';
-                            }
+                            board[column, gap] = '0';
                         }
                     }
-
                 }
 
                 for (int row = 0; row < 10; row++)
                 {
-                    var numberOf0sInRow = 0;
-                    var numberOf1sInRow = 0;
-                    var numberOfUnknownsInRow = 0;
-                    var rowAsString = string.Empty;
-                    var gaps = new List<int>();
+                    var rowDetails = LineDetails.ForRow(board, row);
 
-                    for (int column = 0; column < 10; column++)
+                    if (rowDetails.NumberOfGaps == 3 && rowDetails.NumberOf0s == 4)
                     {
-                        if (board[column, row] == '0') numberOf0sInRow++;
-                        if (board[column, row] == '1') numberOf1sInRow++;
-                        if (board[column, row] == ' ')
-                        {
-                            numberOfUnknownsInRow++;
-                            gaps.Add(column);
-                        }
-                        rowAsString += board[column, row];
-                    }
-
-                    if (numberOfUnknownsInRow == 3 && numberOf0sInRow == 4)
-                    {
-                        // 1 x 0 to place
-                        // 2 x 1 to place
-
-                        var startOfMatch = rowAsString.IndexOf("  1");
+                        var startOfMatch = rowDetails.AsText.IndexOf("  1");
                         if (startOfMatch != -1)
                         {
                             // 1 goes in the final gap
-                            var otherGap = gaps.Except(Enumerable.Range(startOfMatch, 3)).Single();
+                            var otherGap = rowDetails.Gaps.Except(Enumerable.Range(startOfMatch, 3)).Single();
                             board[otherGap, row] = '1';
                         }
                     }
 
-                    if (numberOfUnknownsInRow != 0 && numberOf0sInRow == 5)
+                    if (rowDetails.NumberOfGaps != 0 && rowDetails.NumberOf0s == 5)
                     {
-                        foreach (var gap in gaps)
+                        foreach (var gap in rowDetails.Gaps)
                         {
                             board[gap, row] = '1';
                         }
                     }
 
-                    if (numberOfUnknownsInRow != 0 && numberOf1sInRow == 5)
+                    if (rowDetails.NumberOfGaps != 0 && rowDetails.NumberOf1s == 5)
                     {
-                        foreach (var gap in gaps)
+                        foreach (var gap in rowDetails.Gaps)
                         {
                             board[gap, row] = '0';
                         }
@@ -200,24 +174,10 @@ namespace Binary
             // Search for pattern in each row
             for (int row = 0; row < 10; row++)
             {
-                var rowAsString = string.Empty;
-                for (int column = 0; column < 10; column++)
-                {
-                    rowAsString += board[column, row];
-                }
-
-                var startOfMatch = rowAsString.IndexOf(pattern);
-                while (startOfMatch != -1)
-                {
-                    results.Add(new Match
-                    {
-                        Locations = Enumerable.Range(startOfMatch, pattern.Length)
-                                              .Select(col => new Location { Column = col, Row = row })
-                                              .ToList()
-                    });
-
-                    startOfMatch = rowAsString.IndexOf(pattern, startOfMatch + 1);
-                }
+                var rowDetails = LineDetails.ForRow(board, row);
+                var matches = rowDetails.MatchPattern(pattern)
+                                           .Select(m => new Match() { Locations = m.Select(l => new Location { Column = l, Row = row }).ToList() });
+                results.AddRange(matches);
             }
 
 

@@ -40,5 +40,24 @@ namespace Binary
 
             return result;
         }
+
+        public static LineDetails ForRow(char[,] board, int row)
+        {
+            var result = new LineDetails();
+
+            for (int column = 0; column < 10; column++)
+            {
+                if (board[column, row] == '0') result.NumberOf0s++;
+                if (board[column, row] == '1') result.NumberOf1s++;
+                if (board[column, row] == ' ')
+                {
+                    result.NumberOfGaps++;
+                    result.Gaps.Add(column);
+                }
+                result.AsText += board[column, row];
+            }
+
+            return result;
+        }
     }
 }
