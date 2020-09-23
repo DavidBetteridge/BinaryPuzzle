@@ -11,6 +11,19 @@ namespace Binary
         public List<int> Gaps { get; private set; } = new List<int>();
         public string AsText { get; private set; } = string.Empty;
 
+        private readonly bool _forColumn;
+        private readonly int _cellNumber;
+        private readonly char[,] board;
+
+        public LineDetails(bool forColumn, int cellNumber, char[,] board)
+        {
+            _forColumn = forColumn;
+            _cellNumber = cellNumber;
+            this.board = board;
+        }
+
+        public LineDetails Refresh() => _forColumn ? ForColumn(board, _cellNumber) : ForRow(board, _cellNumber);
+
         public IEnumerable<IEnumerable<int>> MatchPattern(string pattern)
         {
             var startOfMatch = AsText.IndexOf(pattern);
@@ -24,7 +37,7 @@ namespace Binary
 
         public static LineDetails ForColumn(char[,] board, int column)
         {
-            var result = new LineDetails();
+            var result = new LineDetails(true, column, board);
 
             for (int row = 0; row < 10; row++)
             {
@@ -43,7 +56,7 @@ namespace Binary
 
         public static LineDetails ForRow(char[,] board, int row)
         {
-            var result = new LineDetails();
+            var result = new LineDetails(false, row, board);
 
             for (int column = 0; column < 10; column++)
             {
