@@ -13,16 +13,20 @@ namespace Binary
 
         private readonly bool _forColumn;
         private readonly int _cellNumber;
-        private readonly char[,] board;
+        private readonly char[,] _board;
 
         public LineDetails(bool forColumn, int cellNumber, char[,] board)
         {
             _forColumn = forColumn;
             _cellNumber = cellNumber;
-            this.board = board;
-        }
+            _board = board;
 
-        public LineDetails Refresh() => _forColumn ? ForColumn(board, _cellNumber) : ForRow(board, _cellNumber);
+            if (forColumn)
+                RecalculateColumn();
+            else
+                RecalculateRow();
+
+        }
 
         public IEnumerable<IEnumerable<int>> MatchPattern(string pattern)
         {
@@ -35,42 +39,78 @@ namespace Binary
             }
         }
 
-        public static LineDetails ForColumn(char[,] board, int column)
+        internal void SetValue(int location, char value)
         {
-            var result = new LineDetails(true, column, board);
-
-            for (int row = 0; row < 10; row++)
+            if (_forColumn)
             {
-                if (board[column, row] == '0') result.NumberOf0s++;
-                if (board[column, row] == '1') result.NumberOf1s++;
-                if (board[column, row] == ' ')
-                {
-                    result.NumberOfGaps++;
-                    result.Gaps.Add(row);
-                }
-                result.AsText += board[column, row];
+                _board[_cellNumber, location] = value;
+                RecalculateColumn();
             }
-
-            return result;
+            else
+            {
+                _board[location, _cellNumber] = value;
+                RecalculateRow();
+            }
         }
 
-        public static LineDetails ForRow(char[,] board, int row)
+        private void ResetTotals()
         {
-            var result = new LineDetails(false, row, board);
+            NumberOf0s = 0;
+            NumberOf1s = 0;
+            NumberOfGaps = 0;
+            AsText = string.Empty;
+            Gaps.Clear();
+        }
+
+        private void RecalculateRow()
+        {
+            ResetTotals();
 
             for (int column = 0; column < 10; column++)
             {
-                if (board[column, row] == '0') result.NumberOf0s++;
-                if (board[column, row] == '1') result.NumberOf1s++;
-                if (board[column, row] == ' ')
+                switch (_board[column, _cellNumber])
                 {
-                    result.NumberOfGaps++;
-                    result.Gaps.Add(column);
+                    case '0':
+                        NumberOf0s++;
+                        break;
+                    case '1':
+                        NumberOf1s++;
+                        break;
+                    default:
+                        NumberOfGaps++;
+                        Gaps.Add(column);
+                        break;
                 }
-                result.AsText += board[column, row];
+                AsText += _board[column, _cellNumber];
             }
-
-            return result;
         }
+
+        private void RecalculateColumn()
+        {
+            ResetTotals();
+
+            for (int row = 0; row < 10; row++)
+            {
+                switch (_board[_cellNumber, row])
+                {
+                    case '0':
+                        NumberOf0s++;
+                        break;
+                    case '1':
+                        NumberOf1s++;
+                        break;
+                    default:
+                        NumberOfGaps++;
+                        Gaps.Add(row);
+                        break;
+                }
+
+                AsText += _board[_cellNumber, row];
+            }
+        }
+
+        public static LineDetails ForColumn(char[,] board, int column) => new LineDetails(true, column, board);
+
+        public static LineDetails ForRow(char[,] board, int row) => new LineDetails(false, row, board);
     }
 }

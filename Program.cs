@@ -16,14 +16,14 @@ namespace Binary
                 {
                     var lineDetails = LineDetails.ForColumn(board, column);
 
-                    ApplyPatterns(board, lineDetails, row => new Location { Column = column, Row = row });
+                    ApplyPatterns(lineDetails);
                 }
 
                 for (int row = 0; row < 10; row++)
                 {
                     var lineDetails = LineDetails.ForRow(board, row);
 
-                    ApplyPatterns(board, lineDetails, column => new Location { Column = column, Row = row });
+                    ApplyPatterns(lineDetails);
                 }
 
                 Display(board);
@@ -31,76 +31,59 @@ namespace Binary
             }
         }
 
-        private static void ApplyPatterns(char[,] board, LineDetails lineDetails, Func<int, Location> map)
+        private static void ApplyPatterns(LineDetails lineDetails)
         {
             var m = lineDetails.MatchPattern("11 ");
             foreach (var match in m)
             {
-                var location = map(match.Last());
-                board[location.Column, location.Row] = '0';
+                lineDetails.SetValue(match.Last(), '0');
             }
-            lineDetails = lineDetails.Refresh();
 
             m = lineDetails.MatchPattern(" 11");
             foreach (var match in m)
             {
-                var location = map(match.First());
-                board[location.Column, location.Row] = '0';
+                lineDetails.SetValue(match.First(), '0');
             }
-            lineDetails = lineDetails.Refresh();
 
             m = lineDetails.MatchPattern("00 ");
             foreach (var match in m)
             {
-                var location = map(match.Last());
-                board[location.Column, location.Row] = '1';
+                lineDetails.SetValue(match.Last(), '1');
             }
-            lineDetails = lineDetails.Refresh();
 
             m = lineDetails.MatchPattern(" 00");
             foreach (var match in m)
             {
-                var location = map(match.First());
-                board[location.Column, location.Row] = '1';
+                lineDetails.SetValue(match.First(), '1');
             }
-            lineDetails = lineDetails.Refresh();
 
             m = lineDetails.MatchPattern("0 0");
             foreach (var match in m)
             {
-                var location = map(match.ElementAt(1));
-                board[location.Column, location.Row] = '1';
+                lineDetails.SetValue(match.ElementAt(1), '1');
             }
-            lineDetails = lineDetails.Refresh();
 
             m = lineDetails.MatchPattern("1 1");
             foreach (var match in m)
             {
-                var location = map(match.ElementAt(1));
-                board[location.Column, location.Row] = '0';
+                lineDetails.SetValue(match.ElementAt(1), '0');
             }
-            lineDetails = lineDetails.Refresh();
 
             if (lineDetails.NumberOfGaps != 0 && lineDetails.NumberOf0s == 5)
             {
-                foreach (var gap in lineDetails.Gaps)
+                foreach (var gap in lineDetails.Gaps.ToArray())
                 {
-                    var location = map(gap);
-                    board[location.Column, location.Row] = '1';
+                    lineDetails.SetValue(gap, '1');
                 }
             }
-            lineDetails = lineDetails.Refresh();
 
             if (lineDetails.NumberOfGaps != 0 && lineDetails.NumberOf1s == 5)
             {
-                foreach (var gap in lineDetails.Gaps)
+                foreach (var gap in lineDetails.Gaps.ToArray())
                 {
-                    var location = map(gap);
-                    board[location.Column, location.Row] = '0';
+                    lineDetails.SetValue(gap, '0');
                 }
             }
-            lineDetails = lineDetails.Refresh();
-
 
             if (lineDetails.NumberOfGaps == 3 && lineDetails.NumberOf0s == 4)
             {
@@ -108,8 +91,7 @@ namespace Binary
                 if (matchPattern.Count() == 1)
                 {
                     var otherGap = lineDetails.Gaps.Except(matchPattern.Single()).Single();
-                    var location = map(otherGap);
-                    board[location.Column, location.Row] = '1';
+                    lineDetails.SetValue(otherGap, '1');
                 }
                 else
                 {
@@ -117,12 +99,10 @@ namespace Binary
                     if (matchPattern.Count() == 1)
                     {
                         var otherGap = lineDetails.Gaps.Except(matchPattern.Single()).Single();
-                        var location = map(otherGap);
-                        board[location.Column, location.Row] = '1';
+                        lineDetails.SetValue(otherGap, '1');
                     }
                 }
             }
-            lineDetails = lineDetails.Refresh();
 
             if (lineDetails.NumberOfGaps == 3 && lineDetails.NumberOf1s == 4)
             {
@@ -130,8 +110,7 @@ namespace Binary
                 if (matchPattern.Count() == 1)
                 {
                     var otherGap = lineDetails.Gaps.Except(matchPattern.Single()).Single();
-                    var location = map(otherGap);
-                    board[location.Column, location.Row] = '0';
+                    lineDetails.SetValue(otherGap, '0');
                 }
                 else
                 {
@@ -139,12 +118,10 @@ namespace Binary
                     if (matchPattern.Count() == 1)
                     {
                         var otherGap = lineDetails.Gaps.Except(matchPattern.Single()).Single();
-                        var location = map(otherGap);
-                        board[location.Column, location.Row] = '0';
+                        lineDetails.SetValue(otherGap, '0');
                     }
                 }
             }
-
         }
 
         private static void Display(char[,] board)
