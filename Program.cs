@@ -128,14 +128,17 @@ namespace Binary
         {
             for (int row = 0; row < 10; row++)
             {
+                Console.WriteLine("  ---------------------");
+                Console.Write("  |");
                 for (int column = 0; column < 10; column++)
                 {
                     Console.Write(board[column, row]);
+                    Console.Write("|");
                 }
                 Console.WriteLine();
             }
 
-            Console.WriteLine();
+            Console.WriteLine("  ---------------------");
             Console.WriteLine();
         }
 
